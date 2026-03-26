@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,6 +13,9 @@ public class PlayerController : MonoBehaviour
     public Material flashMaterial;
     public Material defaultMaterial;
 
+    public AudioClip shotSound;
+    public AudioClip hitSound;
+    public AudioClip deadSound;
 
     void Start()
     {
@@ -61,6 +65,8 @@ public class PlayerController : MonoBehaviour
         }
         void Shoot()
         {
+            GetComponent<AudioSource>().PlayOneShot(shotSound);
+
             Vector3 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             worldPosition.z = 0;
             worldPosition -= transform.position + new Vector3(0, -0.5f);
@@ -86,11 +92,13 @@ public class PlayerController : MonoBehaviour
             if (GetComponent<Character>().Hit(1))
             {
                 //살아있다.
+                GetComponent<AudioSource>().PlayOneShot(hitSound);
                 Flash();
             }
             else
             {
                 //죽음
+                GetComponent<AudioSource>().PlayOneShot(deadSound);
                 Die();
             }
         }
@@ -113,5 +121,6 @@ public class PlayerController : MonoBehaviour
     void AfterDying()
     {
         //gameObject.SetActive(false);
+        SceneManager.LoadScene("GameOverScene");
     }
 }
