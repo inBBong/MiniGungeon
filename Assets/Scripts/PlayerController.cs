@@ -8,6 +8,11 @@ public class PlayerController : MonoBehaviour
     Vector3 move;
 
     public GameObject bulletPrefab;
+
+    public Material flashMaterial;
+    public Material defaultMaterial;
+
+
     void Start()
     {
 
@@ -73,5 +78,40 @@ public class PlayerController : MonoBehaviour
     {
         transform.Translate(move * speed * Time.fixedDeltaTime);
 
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "enemy")
+        {
+            if (GetComponent<Character>().Hit(1))
+            {
+                //살아있다.
+                Flash();
+            }
+            else
+            {
+                //죽음
+                Die();
+            }
+        }
+    }
+    void Flash()
+    {
+        GetComponent<SpriteRenderer>().material = flashMaterial;
+        Invoke("AfterFlash", 0.5f);
+    }
+    void AfterFlash()
+    {
+        GetComponent<SpriteRenderer>().material = defaultMaterial;
+    }
+    void Die()
+    {
+        
+        GetComponent<Animator>().SetTrigger("Die");
+        Invoke("AfterDying", 0.875f);
+    }
+    void AfterDying()
+    {
+        //gameObject.SetActive(false);
     }
 }
