@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem.XR.Haptics;
 using UnityEngine.Rendering;
 
 public class EnemyController : MonoBehaviour
@@ -14,6 +15,8 @@ public class EnemyController : MonoBehaviour
     public Material flashMaterial;
     public Material defaultMaterial;
 
+    public AudioClip hitSound;
+    public AudioClip deadSound;
 
     GameObject target;
     State state;
@@ -21,10 +24,22 @@ public class EnemyController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        target = GameObject.Find("Player");
-        state = State.Moving;
+      
     }
-
+    public void Spawn(GameObject target)
+    {
+        this.target = target;
+        state= State.Spawning;
+        GetComponent<Character>().Initialize();
+        GetComponent<Animator>().SetTrigger("Spawn");
+        Invoke("StartMoving", 1.0f);
+        GetComponent<Collider2D>().enabled = false;
+    }
+    void StartMoving()
+    {
+        GetComponent<Collider2D>().enabled=true;
+        state= State.Moving;   
+    }
     private void FixedUpdate()
     {
         if (state == State.Moving)
@@ -51,11 +66,13 @@ public class EnemyController : MonoBehaviour
             if (GetComponent<Character>().Hit(d))
             {
                 //살아있을때
+                GetComponent<AudioSource>().PlayOneShot(hitSound);
                 Flash();
             }
             else
             {
                 //죽었을때
+                GetComponent<AudioSource>().PlayOneShot(deadSound);
                 Die();
             }
         }
@@ -77,6 +94,6 @@ public class EnemyController : MonoBehaviour
     }
     void AfterDying()
     {
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,6 +9,14 @@ public class PlayerController : MonoBehaviour
     Vector3 move;
 
     public GameObject bulletPrefab;
+
+    public Material flashMaterial;
+    public Material defaultMaterial;
+
+    public AudioClip shotSound;
+    public AudioClip hitSound;
+    public AudioClip deadSound;
+
     void Start()
     {
 
@@ -56,6 +65,8 @@ public class PlayerController : MonoBehaviour
         }
         void Shoot()
         {
+            GetComponent<AudioSource>().PlayOneShot(shotSound);
+
             Vector3 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             worldPosition.z = 0;
             worldPosition -= transform.position + new Vector3(0, -0.5f);
@@ -73,5 +84,43 @@ public class PlayerController : MonoBehaviour
     {
         transform.Translate(move * speed * Time.fixedDeltaTime);
 
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "enemy")
+        {
+            if (GetComponent<Character>().Hit(1))
+            {
+                //살아있다.
+                GetComponent<AudioSource>().PlayOneShot(hitSound);
+                Flash();
+            }
+            else
+            {
+                //죽음
+                GetComponent<AudioSource>().PlayOneShot(deadSound);
+                Die();
+            }
+        }
+    }
+    void Flash()
+    {
+        GetComponent<SpriteRenderer>().material = flashMaterial;
+        Invoke("AfterFlash", 0.5f);
+    }
+    void AfterFlash()
+    {
+        GetComponent<SpriteRenderer>().material = defaultMaterial;
+    }
+    void Die()
+    {
+        
+        GetComponent<Animator>().SetTrigger("Die");
+        Invoke("AfterDying", 0.875f);
+    }
+    void AfterDying()
+    {
+        //gameObject.SetActive(false);
+        SceneManager.LoadScene("GameOverScene");
     }
 }
